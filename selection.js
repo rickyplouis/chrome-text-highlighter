@@ -11,83 +11,86 @@ function returnSelectedText(){
 //highlight copied from https://stackoverflow.com/questions/304837/javascript-user-selection-highlighting
 //refactor and reread to understand it more later
 
-function getSafeRanges(dangerRange) {
-  var commonContainer = dangerRange.commonAncestorContainer;
+
+/**
+ * Starts at bottom of dom tree and creates an array of parentNodes
+ * until it reaches the commonContainer
+ * @param {userRange}
+ *
+ */
+
+function treeReversal(container, commonContainer, reversedTree){
+  return container != commonContainer ?
+    treeReversal(container.parentNode, commonContainer, reversedTree.concat(container)) : reversedTree;
+}
+
+function getSafeRanges(userRange) {
+  var commonContainer = userRange.commonAncestorContainer;
   // Starts -- Work inward from the start, selecting the largest safe range
-  var s = new Array(0), rs = new Array(0);
-  if (dangerRange.startContainer != commonContainer){
-    for(var i = dangerRange.startContainer; i != commonContainer; i = i.parentNode){
-      s.push(i)
-    }
+  var beginRanges = new Array(0),
+      sortedBegin = new Array(0);
+  if (userRange.startContainer != commonContainer){
+    beginRanges = treeReversal(userRange.startContainer, commonContainer, [])
   }
-  if (0 < s.length){
-    for(var i = 0; i < s.length; i++) {
-      var xs = document.createRange();
-      if (i){
-        xs.setStartAfter(s[i-1]);
-        xs.setEndAfter(s[i].lastChild);
+  if (0 < beginRanges.length){
+    for(var i = 0; i < beginRanges.length; i++) {
+      var currNode = beginRanges[i],
+          currRange = document.createRange();
+
+      if (i === 0){
+        currRange.setStart(currNode, userRange.startOffset);
+        currRange.setEndAfter( (currNode.nodeType == Node.TEXT_NODE) ? currNode : currNode.lastChild);
       }
       else {
-        xs.setStart(s[i], dangerRange.startOffset);
-        xs.setEndAfter(
-          (s[i].nodeType == Node.TEXT_NODE)
-          ? s[i] : s[i].lastChild
-        );
+        currRange.setStartAfter(beginRanges[i-1]);
+        currRange.setEndAfter(currNode.lastChild);
       }
-      rs.push(xs);
+      sortedBegin.push(currRange);
     }
   }
 
   // Ends -- basically the same code reversed
-  var e = new Array(0), re = new Array(0);
-  if (dangerRange.endContainer != commonContainer){
-    for(var i = dangerRange.endContainer; i != commonContainer; i = i.parentNode){
-      e.push(i)
-    }
+  var endRanges = new Array(0),
+      sortedEnd = new Array(0);
+
+  if (userRange.endContainer != commonContainer){
+    endRanges = treeReversal(userRange.endContainer, commonContainer, [])
   }
 
-  if (0 < e.length){
-    for(var i = 0; i < e.length; i++) {
-        var docRange = document.createRange();
-        if (i) {
-            docRange.setStartBefore(e[i].firstChild);
-            docRange.setEndBefore(e[i-1]);
+  if (0 < endRanges.length){
+    for(var i = 0; i < endRanges.length; i++) {
+        var currentNode = endRanges[i],
+            currentRange = document.createRange()
+
+        if (i === 0) {
+          currentRange.setStartBefore( (currentNode.nodeType == Node.TEXT_NODE) ? currentNode : currentNode.firstChild );
+          currentRange.setEnd(currentNode, userRange.endOffset);
         } else {
-            docRange.setStartBefore(
-                (e[i].nodeType == Node.TEXT_NODE)
-                ? e[i] : e[i].firstChild
-            );
-            docRange.setEnd(e[i], dangerRange.endOffset);
+          currentRange.setStartBefore(currentNode.firstChild);
+          currentRange.setEndBefore(endRanges[i-1]);
         }
-        re.unshift(docRange);
+        sortedEnd.unshift(currentRange);
     }
   }
   // Middle -- the uncaptured middle
-  if ((0 < s.length) && (0 < e.length)) {
-      var xm = document.createRange();
-      xm.setStartAfter(s[s.length - 1]);
-      xm.setEndBefore(e[e.length - 1]);
+  if ((0 < beginRanges.length) && (0 < endRanges.length)) {
+      var midRanges = document.createRange();
+      midRanges.setStartAfter(beginRanges[beginRanges.length - 1]);
+      midRanges.setEndBefore(endRanges[endRanges.length - 1]);
   }
   else {
-      return [dangerRange];
+      return [userRange];
   }
 
-  // Concat
-  rs.push(xm);
-  response = rs.concat(re);
-
-  // Send to Console
-  return response;
+  return sortedBegin.concat(midRanges, sortedEnd)
 }
 
 function highlightSelection() {
     var userSelection = window.getSelection().getRangeAt(0),
         safeRanges = getSafeRanges(userSelection);
 
-    console.log('safeRanges', safeRanges);
-    for (var i = 0; i < safeRanges.length; i++) {
-        highlightRange(safeRanges[i]);
-    }
+    safeRanges.map( function(range) {highlightRange(range)})
+
 }
 
 function highlightRange(range) {
