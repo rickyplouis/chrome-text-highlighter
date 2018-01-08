@@ -1,12 +1,7 @@
-document.addEventListener('mouseup', (event) => {
-  var selection = returnSelectedText().toString()
-  highlightSelection()
-  console.log('returnSelectedText', returnSelectedText());
+document.addEventListener('mouseup', function(event) {
+  var userSelection = window.getSelection().getRangeAt(0)
+  highlightSelection(userSelection)
 });
-
-function returnSelectedText(){
-  return window.getSelection();
-}
 
 //highlight copied from https://stackoverflow.com/questions/304837/javascript-user-selection-highlighting
 //refactor and reread to understand it more later
@@ -17,7 +12,7 @@ function returnSelectedText(){
  * until it reaches the commonContainer
  * @param {userRange}
  *
- */
+*/
 
 function treeReversal(container, commonContainer, reversedTree){
   return container != commonContainer ?
@@ -85,12 +80,12 @@ function getSafeRanges(userRange) {
   return sortedBegin.concat(midRanges, sortedEnd)
 }
 
-function highlightSelection() {
-    var userSelection = window.getSelection().getRangeAt(0),
-        safeRanges = getSafeRanges(userSelection);
-
+function highlightSelection(userSelection) {
+  // only fire if selected text exists
+  if (userSelection.toString().length > 0){
+    var safeRanges = getSafeRanges(userSelection);
     safeRanges.map( function(range) {highlightRange(range)})
-
+  }
 }
 
 function highlightRange(range) {
