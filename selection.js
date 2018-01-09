@@ -10,19 +10,17 @@ function addPopup(container){
   var popuptext = document.createElement("span")
   popup.classList.add('popup');
   popuptext.classList.add("popuptext", "show")
-  popuptext.innerHTML = "testing"
+  popuptext.innerHTML = "Hello popup"
   popup.append(popuptext)
   container.append(popup)
 }
 
-//highlight copied from https://stackoverflow.com/questions/304837/javascript-user-selection-highlighting
-//refactor and reread to understand it more later
-
 /**
  * Starts at bottom of dom tree and creates an array of parentNodes
  * until it reaches the commonContainer
- * @param {userRange}
- *
+ * @param {Node} container - A Node to begin the traversal
+ * @param {Node} commonContainer - The base node to finish traversing at
+ * @param {Array} reversedTree - Array of nodes set into a tree
 */
 
 function treeReversal(container, commonContainer, reversedTree){
