@@ -1,11 +1,22 @@
 document.addEventListener('mouseup', function(event) {
   var userSelection = window.getSelection().getRangeAt(0)
   highlightSelection(userSelection)
+  var highlightedText = document.getElementById("highlightedText")
+  addPopup(highlightedText)
 });
+
+function addPopup(container){
+  var popup = document.createElement("span")
+  var popuptext = document.createElement("span")
+  popup.classList.add('popup');
+  popuptext.classList.add("popuptext", "show")
+  popuptext.innerHTML = "testing"
+  popup.append(popuptext)
+  container.append(popup)
+}
 
 //highlight copied from https://stackoverflow.com/questions/304837/javascript-user-selection-highlighting
 //refactor and reread to understand it more later
-
 
 /**
  * Starts at bottom of dom tree and creates an array of parentNodes
@@ -89,10 +100,14 @@ function highlightSelection(userSelection) {
 }
 
 function highlightRange(range) {
-    var newNode = document.createElement("div");
-    newNode.setAttribute(
-       "style",
-       "background-color: yellow; display: inline;"
-    );
-    range.surroundContents(newNode);
+  var newNode = document.createElement("div")
+  newNode.setAttribute(
+    "id",
+    "highlightedText"
+  )
+  newNode.setAttribute(
+     "style",
+     "background-color: yellow; display: inline;"
+  );
+  range.surroundContents(newNode);
 }

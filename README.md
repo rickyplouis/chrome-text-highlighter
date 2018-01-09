@@ -1,9 +1,10 @@
 # What
 Simple chrome extension that allows for highlighting text
 
-## Currently Have:
-- Log selection to console
+#Setup
 
-## Needs
-* Search document by given selection
-* Change background color of selection
+1. Navigate to the following [link](chrome://extensions/)
+
+2. Click load unpacked extensions
+
+3. Upload extension

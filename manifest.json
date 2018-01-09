@@ -15,6 +15,7 @@
  "content_scripts": [
    {
      "matches": ["<all_urls>"],
+     "css": ["popup.css"],
      "js": ["jquery-3.2.1.min.js", "selection.js"],
      "run_at": "document_start",
      "all_frames": true
