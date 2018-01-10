@@ -1,7 +1,7 @@
 # What
 Simple chrome extension that allows for highlighting text
 
-#Setup
+# Setup
 
 1. Navigate to the following [link](chrome://extensions/)
 
@@ -9,6 +9,6 @@ Simple chrome extension that allows for highlighting text
 
 3. Upload extension
 
-##Credit
+## Credit
 
 Made possible with code from this stack overflow [post](https://stackoverflow.com/questions/304837/javascript-user-selection-highlighting)
