@@ -1,11 +1,19 @@
+document.addEventListener("drag", function(evt) {
+  console.log('evt::drag');
+})
+
+document.addEventListener("dragend", function(evt) {
+  console.log('evt::dragend');
+})
+
 document.addEventListener('mouseup', function(event) {
   var userSelection = window.getSelection().getRangeAt(0)
   highlightSelection(userSelection)
-  var highlightedText = document.getElementById("highlightedText")
-  addPopup(highlightedText)
+
 });
 
-function addPopup(container){
+function addPopup(){
+  var container = document.getElementsByClassName("highlightedText")[0]
   var popup = document.createElement("span")
   var popuptext = document.createElement("span")
   popup.classList.add('popup');
@@ -13,6 +21,17 @@ function addPopup(container){
   popuptext.innerHTML = "Hello popup"
   popup.append(popuptext)
   container.append(popup)
+}
+
+function removePopup(){
+  var element = document.getElementsByClassName("popup")[0];
+  var text = document.getElementsByClassName("popuptext")[0]
+  if (element && text){
+    element.outerHTML = "";
+    text.outerHTML = ""
+    delete text
+    delete element;
+  }
 }
 
 /**
@@ -89,18 +108,44 @@ function getSafeRanges(userRange) {
   return sortedBegin.concat(midRanges, sortedEnd)
 }
 
+function safeHighlights (userSelection){
+  return new Promise(function(resolve, reject) {
+    var safeRanges = getSafeRanges(userSelection)
+    var safeHighlights = safeRanges.map( function(range) {highlightRange(range)})
+    return safeHighlights.length > 0 ? resolve(safeHighlights) : reject([])
+  });
+}
+
+function removeHighlight(){
+  var highlights = document.getElementsByClassName("highlightedText")
+  console.log('highlights', highlights);
+  for (var x = 0; x < highlights.length; x++){
+    highlights[x].setAttribute(
+      'style',
+      'background-color: none; display: inline;'
+    )
+    highlights[x].removeAttribute('class')
+  }
+}
+
 function highlightSelection(userSelection) {
   // only fire if selected text exists
   if (userSelection.toString().length > 0){
-    var safeRanges = getSafeRanges(userSelection);
-    safeRanges.map( function(range) {highlightRange(range)})
+    safeHighlights(userSelection).then(function(){
+      addPopup()
+    })
+  } else {
+    return Promise.all([
+      removePopup(),
+      removeHighlight()
+    ])
   }
 }
 
 function highlightRange(range) {
   var newNode = document.createElement("div")
   newNode.setAttribute(
-    "id",
+    "class",
     "highlightedText"
   )
   newNode.setAttribute(
