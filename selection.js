@@ -12,13 +12,25 @@ document.addEventListener('mouseup', function(event) {
 
 });
 
-function addPopup(){
-  var container = document.getElementsByClassName("highlightedText")[0]
-  var popup = document.createElement("span")
-  var popuptext = document.createElement("span")
+/**
+ * Create Element helper function
+ * @param {string} tagName - Name of element to create
+ * @param {string} text - Text to put inside of element
+ * @return {Element}
+ */
+function makeElement(tagName, text){
+  var element = document.createElement(tagName)
+  if (text){
+    element.innerHTML = text
+  }
+  return element
+}
+
+function addPopup(container){
+  var popup = makeElement("span")
+  var popuptext = makeElement("span", "Hello Popup")
   popup.classList.add('popup');
   popuptext.classList.add("popuptext", "show")
-  popuptext.innerHTML = "Hello popup"
   popup.append(popuptext)
   container.append(popup)
 }
@@ -118,21 +130,20 @@ function safeHighlights (userSelection){
 
 function removeHighlight(){
   var highlights = document.getElementsByClassName("highlightedText")
-  console.log('highlights', highlights);
-  for (var x = 0; x < highlights.length; x++){
-    highlights[x].setAttribute(
+  Array.prototype.map.call(highlights, function(highlight){
+    highlight.setAttribute(
       'style',
       'background-color: none; display: inline;'
     )
-    highlights[x].removeAttribute('class')
-  }
+    highlight.removeAttribute('class')
+  })
 }
 
 function highlightSelection(userSelection) {
   // only fire if selected text exists
   if (userSelection.toString().length > 0){
     safeHighlights(userSelection).then(function(){
-      addPopup()
+      addPopup(document.getElementsByClassName("highlightedText")[0])
     })
   } else {
     return Promise.all([
@@ -143,7 +154,7 @@ function highlightSelection(userSelection) {
 }
 
 function highlightRange(range) {
-  var newNode = document.createElement("div")
+  var newNode = makeElement("div")
   newNode.setAttribute(
     "class",
     "highlightedText"
