@@ -1,11 +1,3 @@
-document.addEventListener("drag", function(evt) {
-  console.log('evt::drag');
-})
-
-document.addEventListener("dragend", function(evt) {
-  console.log('evt::dragend');
-})
-
 document.addEventListener('mouseup', function(event) {
   var userSelection = window.getSelection().getRangeAt(0)
   highlightSelection(userSelection)
@@ -26,26 +18,6 @@ function makeElement(tagName, text){
   return element
 }
 
-function addPopup(container){
-  var popup = makeElement("span")
-  var popuptext = makeElement("span", "Hello Popup")
-  popup.classList.add('popup');
-  popuptext.classList.add("popuptext", "show")
-  popup.append(popuptext)
-  container.append(popup)
-}
-
-function removePopup(){
-  var element = document.getElementsByClassName("popup")[0];
-  var text = document.getElementsByClassName("popuptext")[0]
-  if (element && text){
-    element.outerHTML = "";
-    text.outerHTML = ""
-    delete text
-    delete element;
-  }
-}
-
 /**
  * Starts at bottom of dom tree and creates an array of parentNodes
  * until it reaches the commonContainer
@@ -53,12 +25,18 @@ function removePopup(){
  * @param {Node} commonContainer - The base node to finish traversing at
  * @param {Array} reversedTree - Array of nodes set into a tree
 */
-
 function treeReversal(container, commonContainer, reversedTree){
   return container != commonContainer ?
     treeReversal(container.parentNode, commonContainer, reversedTree.concat(container)) : reversedTree;
 }
 
+
+/**
+ * If a user selects a range spanning multiple elements this function
+ * creates a safe range of elements that can be wrapped around
+ * @param {Range} userRange - user selected range
+ * @return {Array} array of safe ranges
+ */
 function getSafeRanges(userRange) {
   var commonContainer = userRange.commonAncestorContainer;
   // Starts -- Work inward from the start, selecting the largest safe range
@@ -122,12 +100,16 @@ function getSafeRanges(userRange) {
 
 function safeHighlights (userSelection){
   return new Promise(function(resolve, reject) {
-    var safeRanges = getSafeRanges(userSelection)
-    var safeHighlights = safeRanges.map( function(range) {highlightRange(range)})
+    var safeHighlights = getSafeRanges(userSelection).map( function(range) {highlightRange(range)})
     return safeHighlights.length > 0 ? resolve(safeHighlights) : reject([])
   });
 }
 
+/**
+ * Get all elements with highlightedText class
+ * and set background-color to be none as well as remove
+ * the class attached
+ */
 function removeHighlight(){
   var highlights = document.getElementsByClassName("highlightedText")
   Array.prototype.map.call(highlights, function(highlight){
@@ -139,20 +121,29 @@ function removeHighlight(){
   })
 }
 
+/**
+ * Only fire safe highlights if user selection
+ * contains text after the mouse event
+ * else if no text selected then unhighlight text
+ * @param {Range}
+ */
 function highlightSelection(userSelection) {
-  // only fire if selected text exists
   if (userSelection.toString().length > 0){
     safeHighlights(userSelection).then(function(){
-      addPopup(document.getElementsByClassName("highlightedText")[0])
+      console.log('highlighted userSelection', userSelection);
+    }).catch( function(error){
+      console.log('error highlighting selection', error);
     })
   } else {
-    return Promise.all([
-      removePopup(),
-      removeHighlight()
-    ])
+    removeHighlight()
   }
 }
 
+/**
+ * Create div with highlightedText class
+ * to wrap user selection range
+ * @param {Range}
+ */
 function highlightRange(range) {
   var newNode = makeElement("div")
   newNode.setAttribute(
